@@ -160,7 +160,7 @@ body {
 .digit-display {
   display: flex;
   justify-content: center;
-  gap: 2px;
+  gap: 5px;
 }
 .digit-col {
   display: flex;
@@ -174,8 +174,8 @@ body {
   background: #444;
   color: white;
   border: none;
-  width: 30px;
-  height: 35px;
+  width: 45px;
+  height: 45px;
   font-size: 20px;
   cursor: pointer;
   border-radius: 2px;

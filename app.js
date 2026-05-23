@@ -7,7 +7,7 @@ const groups = {
 // Modello Dati base
 const defaultData = {
   date: new Date().toISOString().split("T")[0],
-  operator: "",
+  operator: "Worker",
   closures: [],
 };
 
@@ -49,6 +49,9 @@ if (document.getElementById("page-config")) {
     appData.operator = document.getElementById("input-operator").value;
     appData.date = document.getElementById("input-date").value;
 
+    //Creo la data in base al testo selezionato
+    let data_selezionata = creaDataDaTesto(appData.date);
+    // leggo nuovi prezzi
     let newPrices = {
       SSP: parseFloat(document.getElementById("input-price-ssp").value) || 0,
       Diesel:
@@ -64,7 +67,8 @@ if (document.getElementById("page-config")) {
         startCounters: JSON.parse(JSON.stringify(active.endCounters)),
         endCounters: JSON.parse(JSON.stringify(active.endCounters)),
         prices: newPrices,
-        timestampStart: new Date().toISOString(),
+        // timestampStart: new Date().toISOString(),
+        timestampStart: data_selezionata.toISOString(),
         timestampEnd: null,
       });
     } else {
@@ -73,7 +77,8 @@ if (document.getElementById("page-config")) {
         startCounters: createEmptyCounters(),
         endCounters: createEmptyCounters(),
         prices: newPrices,
-        timestampStart: new Date().toISOString(),
+        // timestampStart: new Date().toISOString(),
+        timestampStart: data_selezionata.toISOString(),
         timestampEnd: null,
       });
     }
@@ -88,6 +93,31 @@ if (document.getElementById("page-config")) {
       location.reload();
     }
   });
+}
+
+/**
+ *  Crea oggetto Data in base al testo fornito, viene aggiunto il tempo di adesso
+ * @param {string} data_str : esempio: "2026-05-07"
+ */
+function creaDataDaTesto(data_str) {
+  const [anno, mese, giorno] = data_str.split("-");
+
+  const adesso = new Date();
+
+  const dataCompleta = new Date(
+    anno,
+    mese - 1,
+    giorno,
+    adesso.getHours(),
+    adesso.getMinutes(),
+    adesso.getSeconds(),
+  );
+  // console.log(
+  //   dataCompleta.toLocaleDateString(),
+  //   " ",
+  //   dataCompleta.toLocaleTimeString(),
+  // );
+  return dataCompleta;
 }
 
 // --- LOGICA CONTATORI (INDEX) ---
@@ -126,7 +156,7 @@ if (document.getElementById("page-index")) {
         pumpDiv.innerHTML = `
                     <div class="pump-title">
                         <span>${pump}</span>
-                        <button class="btn-secondary" style="margin:0; padding:5px 10px;" onclick="copyPump('${pump}')">Copia ➔</button>
+                        <button class="btn-secondary" style="margin:0; padding:5px 10px;" onclick="copyPump('${pump}')">Copia ➔ Dopo</button>
                     </div>
                     <div class="counters-grid">
                         <div class="counter-box">
@@ -166,7 +196,7 @@ if (document.getElementById("page-index")) {
     let arr = valStr.split("").map(Number);
 
     arr[index] += delta;
-    // Nessun overflow: blocco a 9 e a 0
+    // Ruoto le cifre una volta raggiunto il limite
     if (arr[index] > 9) arr[index] = 0;
     if (arr[index] < 0) arr[index] = 9;
 
@@ -202,8 +232,11 @@ if (document.getElementById("page-summary")) {
   let grandTotalEuro = 0;
 
   appData.closures.forEach((closure) => {
+    let m_date = new Date(closure.timestampStart);
+    let str_date =
+      m_date.toLocaleDateString() + " " + m_date.toLocaleTimeString();
     let html = `<div class="closure-block">
-            <strong>Chiusura #${closure.id}</strong> - ${new Date(closure.timestampStart).toLocaleTimeString()}<br>`;
+            <strong>Chiusura #${closure.id}</strong> - ${str_date}<br>`;
 
     let closureTotal = 0;
 
