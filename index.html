@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Contatori - Gestione Impianto</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="manifest" href="manifest.json" />
+  </head>
+  <body id="page-index">
+    <nav class="nav-bar no-print">
+      <a href="index.html" class="active">Contatori</a>
+      <a href="config.html">Configurazione</a>
+      <a href="summary.html">Chiusura</a>
+    </nav>
+
+    <main class="container">
+      <header class="app-header">
+        <h1>Gestione Contatori Live</h1>
+        <p id="active-info">
+          Operatore: <span id="op-name">-</span> | Data:
+          <span id="date-label">-</span>
+        </p>
+      </header>
+
+      <div id="counters-container">
+        <!-- Generato dinamicamente via JS -->
+      </div>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>

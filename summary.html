@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Chiusura - Gestione Impianto</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body id="page-summary">
+    <nav class="nav-bar no-print">
+      <a href="index.html">Contatori</a>
+      <a href="config.html">Configurazione</a>
+      <a href="summary.html" class="active">Chiusura</a>
+    </nav>
+
+    <main class="container">
+      <div class="no-print actions-bar">
+        <button id="btn-print" class="btn btn-primary btn-large">
+          🖨️ Stampa Scontrino
+        </button>
+      </div>
+
+      <div id="receipt-area" class="receipt">
+        <div class="receipt-header">
+          <h2>Pump Offlaga</h2>
+          <p>Data: <span id="receipt-date"></span></p>
+          <p>Operatore: <span id="receipt-op"></span></p>
+        </div>
+
+        <div id="receipt-body">
+          <!-- Generato via JS -->
+        </div>
+
+        <div class="receipt-footer" id="receipt-footer">
+          <!-- Totali via JS -->
+        </div>
+      </div>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>

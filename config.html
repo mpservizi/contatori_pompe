@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Configurazione - Gestione Impianto</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body id="page-config">
+    <nav class="nav-bar no-print">
+      <a href="index.html">Contatori</a>
+      <a href="config.html" class="active">Configurazione</a>
+      <a href="summary.html">Chiusura</a>
+    </nav>
+
+    <main class="container">
+      <header class="app-header">
+        <h1>Impostazioni Turno</h1>
+      </header>
+
+      <div class="card">
+        <div class="form-group">
+          <label>Operatore</label>
+          <input type="text" id="input-operator" placeholder="Nome Operatore" />
+        </div>
+        <div class="form-group">
+          <label>Data Giornata</label>
+          <input type="date" id="input-date" />
+        </div>
+
+        <hr />
+        <h3>Prezzi Carburante (€/L)</h3>
+        <div class="form-group">
+          <label>SSP</label>
+          <input type="number" step="0.001" id="input-price-ssp" />
+        </div>
+        <div class="form-group">
+          <label>Diesel</label>
+          <input type="number" step="0.001" id="input-price-diesel" />
+        </div>
+        <div class="form-group">
+          <label>GPL</label>
+          <input type="number" step="0.001" id="input-price-gpl" />
+        </div>
+
+        <p class="warning-text">
+          Nota: Cambiare i prezzi genererà automaticamente una nuova "chiusura
+          parziale".
+        </p>
+
+        <button id="btn-save-config" class="btn btn-primary btn-large">
+          Salva e Apri Nuovo Turno
+        </button>
+        <button
+          id="btn-reset-day"
+          class="btn btn-danger btn-large"
+          style="margin-top: 20px"
+        >
+          Reset Totale Giornata
+        </button>
+      </div>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>

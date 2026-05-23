@@ -1,0 +1,248 @@
+:root {
+  --bg-color: #f4f6f8;
+  --card-bg: #ffffff;
+  --primary: #0056b3;
+  --secondary: #ffc107;
+  --danger: #dc3545;
+  --text-main: #333333;
+  --border: #dee2e6;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: "Courier New", Courier, monospace;
+}
+
+body {
+  background: var(--bg-color);
+  color: var(--text-main);
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
+  padding-bottom: 20px;
+}
+
+/* Navigation */
+.nav-bar {
+  display: flex;
+  background: #222;
+  overflow-x: auto;
+}
+.nav-bar a {
+  flex: 1;
+  text-align: center;
+  padding: 15px;
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+  white-space: nowrap;
+}
+.nav-bar a.active {
+  background: var(--primary);
+}
+
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 10px;
+}
+.app-header {
+  text-align: center;
+  margin: 15px 0;
+}
+.card {
+  background: var(--card-bg);
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+/* Form Elements */
+.form-group {
+  margin-bottom: 15px;
+}
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+.form-group input {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+.warning-text {
+  color: var(--danger);
+  font-size: 0.9em;
+  font-weight: bold;
+}
+
+/* Buttons */
+.btn {
+  display: block;
+  width: 100%;
+  padding: 15px;
+  font-size: 18px;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: center;
+}
+.btn-primary {
+  background: var(--primary);
+  color: white;
+}
+.btn-danger {
+  background: var(--danger);
+  color: white;
+}
+.btn-secondary {
+  background: var(--secondary);
+  color: #333;
+  padding: 10px;
+  font-size: 14px;
+  margin-top: 5px;
+}
+
+/* Contatori UI */
+.group-section {
+  background: var(--card-bg);
+  border: 2px solid var(--border);
+  margin-bottom: 20px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.group-header {
+  background: #e9ecef;
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.pump-row {
+  border-top: 1px solid var(--border);
+  padding: 15px;
+}
+.pump-title {
+  font-weight: bold;
+  font-size: 1.2em;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.counters-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+@media (min-width: 768px) {
+  .counters-grid {
+    flex-direction: row;
+  }
+}
+.counter-box {
+  flex: 1;
+  background: #f8f9fa;
+  padding: 10px;
+  border-radius: 6px;
+  text-align: center;
+}
+
+/* UI a 7 cifre */
+.digit-display {
+  display: flex;
+  justify-content: center;
+  gap: 2px;
+}
+.digit-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #222;
+  border-radius: 4px;
+  padding: 2px;
+}
+.digit-btn {
+  background: #444;
+  color: white;
+  border: none;
+  width: 30px;
+  height: 35px;
+  font-size: 20px;
+  cursor: pointer;
+  border-radius: 2px;
+}
+.digit-btn:active {
+  background: var(--primary);
+}
+.digit-val {
+  color: #0f0;
+  font-family: "Courier New", monospace;
+  font-size: 24px;
+  font-weight: bold;
+  padding: 5px 0;
+}
+
+/* Receipt / Scontrino */
+.receipt {
+  background: white;
+  padding: 20px;
+  font-family: "Courier New", monospace;
+  color: black;
+  max-width: 400px;
+  margin: 0 auto;
+  border: 1px dashed #ccc;
+}
+.receipt-header {
+  text-align: center;
+  border-bottom: 2px dashed black;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+}
+.receipt-footer {
+  border-top: 2px dashed black;
+  padding-top: 10px;
+  margin-top: 10px;
+  font-weight: bold;
+}
+.closure-block {
+  border-bottom: 1px dashed #aaa;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+}
+.receipt-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+}
+
+/* Print Ottimizzazione */
+@media print {
+  body {
+    background: white;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .container {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  .receipt {
+    border: none;
+    max-width: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    font-size: 12px;
+  }
+}
