@@ -1,8 +1,9 @@
 :root {
   --bg-color: #f4f6f8;
   --card-bg: #ffffff;
-  --primary: #0056b3;
-  --secondary: #ffc107;
+  --primary: #3083dc;
+  --secondary: #2ebfa5;
+  --info: #4e4187;
   --danger: #dc3545;
   --text-main: #333333;
   --border: #dee2e6;
@@ -104,13 +105,29 @@ body {
   color: white;
 }
 .btn-secondary {
-  background: var(--secondary);
   color: #333;
-  padding: 10px;
+  padding: 5px;
   font-size: 14px;
   margin-top: 5px;
 }
 
+.bg-secondary {
+  background: var(--secondary);
+}
+.bg-info {
+  background: var(--info);
+}
+
+.no-bg {
+  background: transparent;
+}
+
+.b1 {
+  border: 1px solid;
+}
+.txt-white {
+  color: white;
+}
 /* Contatori UI */
 .group-section {
   background: var(--card-bg);
@@ -120,7 +137,7 @@ body {
   overflow: hidden;
 }
 .group-header {
-  background: #e9ecef;
+  background: var(--primary);
   padding: 10px;
   display: flex;
   justify-content: space-between;
@@ -206,6 +223,10 @@ body {
   border-bottom: 2px dashed black;
   padding-bottom: 10px;
   margin-bottom: 10px;
+}
+.receipt-header p {
+  text-align: left;
+  display: none;
 }
 .receipt-footer {
   border-top: 2px dashed black;

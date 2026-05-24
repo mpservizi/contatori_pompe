@@ -59,29 +59,38 @@ if (document.getElementById("page-config")) {
       GPL: parseFloat(document.getElementById("input-price-gpl").value) || 0,
     };
 
+    // campi default per turno
+    let item_turno = {
+      prices: newPrices,
+      timestampStart: data_selezionata.toISOString(),
+      timestampEnd: null,
+      operator: appData.operator,
+    };
+
+    // parametri personalizzati del turno
+    let config_turno = {};
     if (active) {
       // Chiude la corrente e ne crea una nuova se i prezzi cambiano (o forza nuova)
       active.timestampEnd = new Date().toISOString();
-      appData.closures.push({
+
+      config_turno = {
+        ...item_turno,
         id: active.id + 1,
         startCounters: JSON.parse(JSON.stringify(active.endCounters)),
         endCounters: JSON.parse(JSON.stringify(active.endCounters)),
-        prices: newPrices,
-        // timestampStart: new Date().toISOString(),
-        timestampStart: data_selezionata.toISOString(),
-        timestampEnd: null,
-      });
+      };
     } else {
-      appData.closures.push({
+      config_turno = {
+        ...item_turno,
         id: 1,
         startCounters: createEmptyCounters(),
         endCounters: createEmptyCounters(),
-        prices: newPrices,
-        // timestampStart: new Date().toISOString(),
-        timestampStart: data_selezionata.toISOString(),
-        timestampEnd: null,
-      });
+      };
     }
+
+    // console.log(config_turno);
+    //Aggiungo tutti i parametri del turno nella lista app
+    appData.closures.push(config_turno);
     saveData();
     //alert("Configurazione salvata. Nuovo turno aperto.");
     window.location.href = "index.html";
@@ -145,7 +154,8 @@ if (document.getElementById("page-index")) {
       groupDiv.innerHTML = `
                 <div class="group-header">
                     <h2>${groupName}</h2>
-                    <button class="btn-secondary" onclick="copyGroup('${groupName}')">Copia Gruppo PRIMA ➔ DOPO</button>
+                    <button class="btn-secondary no-bg txt-white b1" onclick="copyGroup('${groupName}')">Prima ➔ Dopo</button>
+                    <button class="btn-secondary no-bg txt-white b1" onclick="copyGroupInverso('${groupName}')">Dopo ➔ Prima</button>
                 </div>
             `;
 
@@ -156,7 +166,8 @@ if (document.getElementById("page-index")) {
         pumpDiv.innerHTML = `
                     <div class="pump-title">
                         <span>${pump}</span>
-                        <button class="btn-secondary" style="margin:0; padding:5px 10px;" onclick="copyPump('${pump}')">Copia ➔ Dopo</button>
+                        <button class="btn-secondary bg-secondary txt-white" style="margin:0; padding:5px 10px;" onclick="copyPump('${pump}')">Prima ➔ Dopo</button>
+                        <button class="btn-secondary bg-info txt-white" style="margin:0; padding:5px 10px;" onclick="copyPumpInverso('${pump}')">Dopo ➔ Prima</button>
                     </div>
                     <div class="counters-grid">
                         <div class="counter-box">
@@ -175,6 +186,7 @@ if (document.getElementById("page-index")) {
     }
   }
 
+  // Crea le cifre UI del contatore
   function generateDigitUI(pump, type) {
     let valStr = String(active[type][pump] || 0).padStart(7, "0");
     let html = '<div class="digit-display">';
@@ -191,33 +203,56 @@ if (document.getElementById("page-index")) {
     return html;
   }
 
-  window.updateDigit = function (pump, type, index, delta) {
-    let valStr = String(active[type][pump] || 0).padStart(7, "0");
-    let arr = valStr.split("").map(Number);
+  initGlobalHelpers();
 
-    arr[index] += delta;
-    // Ruoto le cifre una volta raggiunto il limite
-    if (arr[index] > 9) arr[index] = 0;
-    if (arr[index] < 0) arr[index] = 9;
+  // Hepler utili
+  function initGlobalHelpers() {
+    // Aggiorna le cifre dei contatori delle pompe
+    window.updateDigit = function (pump, type, index, delta) {
+      let valStr = String(active[type][pump] || 0).padStart(7, "0");
+      let arr = valStr.split("").map(Number);
 
-    active[type][pump] = parseInt(arr.join(""), 10);
-    saveData();
-    renderCounters();
-  };
+      arr[index] += delta;
+      // Ruoto le cifre una volta raggiunto il limite
+      if (arr[index] > 9) arr[index] = 0;
+      if (arr[index] < 0) arr[index] = 9;
 
-  window.copyPump = function (pump) {
-    active.endCounters[pump] = active.startCounters[pump];
-    saveData();
-    renderCounters();
-  };
+      active[type][pump] = parseInt(arr.join(""), 10);
+      saveData();
+      renderCounters();
+    };
 
-  window.copyGroup = function (groupName) {
-    groups[groupName].forEach((pump) => {
+    // Copia i contatori prima su dopo
+    window.copyPump = function (pump) {
       active.endCounters[pump] = active.startCounters[pump];
-    });
-    saveData();
-    renderCounters();
-  };
+      saveData();
+      renderCounters();
+    };
+
+    // Copia i contatori Dopo su Prime
+    window.copyPumpInverso = function (pump) {
+      active.startCounters[pump] = active.endCounters[pump];
+      saveData();
+      renderCounters();
+    };
+
+    // Copia il contatori del intero gruppo Prima su Dopo
+    window.copyGroup = function (groupName) {
+      groups[groupName].forEach((pump) => {
+        active.endCounters[pump] = active.startCounters[pump];
+      });
+      saveData();
+      renderCounters();
+    };
+    // Copia il contatori del intero gruppo Dopo su Prima
+    window.copyGroupInverso = function (groupName) {
+      groups[groupName].forEach((pump) => {
+        active.startCounters[pump] = active.endCounters[pump];
+      });
+      saveData();
+      renderCounters();
+    };
+  }
 }
 
 // --- LOGICA SUMMARY (SCONTRINO) ---
@@ -232,11 +267,22 @@ if (document.getElementById("page-summary")) {
   let grandTotalEuro = 0;
 
   appData.closures.forEach((closure) => {
-    let m_date = new Date(closure.timestampStart);
-    let str_date =
-      m_date.toLocaleDateString() + " " + m_date.toLocaleTimeString();
+    let inizio_date = new Date(closure.timestampStart);
+    let fine_date = new Date(closure.timestampEnd);
+    let str_date_inizio =
+      inizio_date.toLocaleDateString() + " " + inizio_date.toLocaleTimeString();
+    let str_date_fine =
+      fine_date.toLocaleDateString() + " " + fine_date.toLocaleTimeString();
+
+    if (closure.timestampEnd == null) {
+      str_date_fine = "Non disponibile";
+    }
     let html = `<div class="closure-block">
-            <strong>Chiusura #${closure.id}</strong> - ${str_date}<br>`;
+            <strong>Chiusura #${closure.id} - Operatore : ${closure.operator}</strong>
+            <br>
+            <p>Inizio:${str_date_inizio}</p>
+            <p>Fine &nbsp;:${str_date_fine}</p>
+            <br>`;
 
     let closureTotal = 0;
 
