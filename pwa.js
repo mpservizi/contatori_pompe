@@ -1,4 +1,4 @@
-const CACHE_NAME = "gas-station-cache-v3"; // ⚠️ CAMBIA QUESTO NUMERO AD OGNI AGGIORNAMENTO
+const CACHE_NAME = "gas-station-cache-v5"; // ⚠️ CAMBIA QUESTO NUMERO AD OGNI AGGIORNAMENTO
 const urlsToCache = [
   "./",
   "./index.html",

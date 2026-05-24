@@ -27,8 +27,19 @@
           <input type="text" id="input-operator" placeholder="Nome Operatore" />
         </div>
         <div class="form-group">
-          <label>Data Giornata</label>
+          <label>Data Giornata (Riferimento)</label>
           <input type="date" id="input-date" />
+        </div>
+
+        <hr />
+        <h3>Orari Turno Corrente</h3>
+        <div class="form-group">
+          <label>Data e Ora INIZIO</label>
+          <input type="datetime-local" id="input-start-datetime" />
+        </div>
+        <div class="form-group">
+          <label>Data e Ora CHIUSURA</label>
+          <input type="datetime-local" id="input-end-datetime" />
         </div>
 
         <hr />
@@ -47,12 +58,19 @@
         </div>
 
         <p class="warning-text">
-          Nota: Cambiare i prezzi genererà automaticamente una nuova "chiusura
-          parziale".
+          Nota: Cambiare i prezzi o cliccare "Forza Nuovo Turno" chiuderà il
+          turno corrente per aprirne uno nuovo.
         </p>
 
         <button id="btn-save-config" class="btn btn-primary btn-large">
-          Salva e Apri Nuovo Turno
+          Salva Modifiche Turno Corrente
+        </button>
+        <button
+          id="btn-force-new"
+          class="btn btn-secondary btn-large"
+          style="margin-top: 10px; background-color: #6c757d; color: white"
+        >
+          Forza Nuovo Turno
         </button>
         <button
           id="btn-reset-day"

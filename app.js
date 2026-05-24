@@ -33,6 +33,37 @@ function createEmptyCounters() {
   return counters;
 }
 
+// Converte stringa ISO per <input type="datetime-local">
+function toDatetimeLocalString(isoString) {
+  if (!isoString) return "";
+  const d = new Date(isoString);
+  if (isNaN(d.getTime())) return "";
+  const YYYY = d.getFullYear();
+  const MM = String(d.getMonth() + 1).padStart(2, "0");
+  const DD = String(d.getDate()).padStart(2, "0");
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mm = String(d.getMinutes()).padStart(2, "0");
+  return `${YYYY}-${MM}-${DD}T${hh}:${mm}`;
+}
+
+/**
+ * Crea oggetto Data in base al testo fornito, viene aggiunto il tempo di adesso
+ * @param {string} data_str : esempio: "2026-05-07"
+ */
+function creaDataDaTesto(data_str) {
+  const [anno, mese, giorno] = data_str.split("-");
+  const adesso = new Date();
+  const dataCompleta = new Date(
+    anno,
+    mese - 1,
+    giorno,
+    adesso.getHours(),
+    adesso.getMinutes(),
+    adesso.getSeconds(),
+  );
+  return dataCompleta;
+}
+
 // --- LOGICA CONFIGURAZIONE ---
 if (document.getElementById("page-config")) {
   document.getElementById("input-operator").value = appData.operator;
@@ -43,15 +74,34 @@ if (document.getElementById("page-config")) {
     document.getElementById("input-price-ssp").value = active.prices.SSP;
     document.getElementById("input-price-diesel").value = active.prices.Diesel;
     document.getElementById("input-price-gpl").value = active.prices.GPL;
+
+    // Popola campi date manuali
+    if (active.timestampStart) {
+      document.getElementById("input-start-datetime").value =
+        toDatetimeLocalString(active.timestampStart);
+    }
+    if (active.timestampEnd) {
+      document.getElementById("input-end-datetime").value =
+        toDatetimeLocalString(active.timestampEnd);
+    }
+  } else {
+    document.getElementById("input-start-datetime").value =
+      toDatetimeLocalString(new Date());
   }
 
+  // LOGICA: SALVA O AGGIORNA TURNO
   document.getElementById("btn-save-config").addEventListener("click", () => {
     appData.operator = document.getElementById("input-operator").value;
     appData.date = document.getElementById("input-date").value;
 
-    //Creo la data in base al testo selezionato
-    let data_selezionata = creaDataDaTesto(appData.date);
-    // leggo nuovi prezzi
+    let startVal = document.getElementById("input-start-datetime").value;
+    let endVal = document.getElementById("input-end-datetime").value;
+
+    let startIso = startVal
+      ? new Date(startVal).toISOString()
+      : creaDataDaTesto(appData.date).toISOString();
+    let endIso = endVal ? new Date(endVal).toISOString() : null;
+
     let newPrices = {
       SSP: parseFloat(document.getElementById("input-price-ssp").value) || 0,
       Diesel:
@@ -59,40 +109,72 @@ if (document.getElementById("page-config")) {
       GPL: parseFloat(document.getElementById("input-price-gpl").value) || 0,
     };
 
-    // campi default per turno
-    let item_turno = {
-      prices: newPrices,
-      timestampStart: data_selezionata.toISOString(),
-      timestampEnd: null,
-      operator: appData.operator,
-    };
-
-    // parametri personalizzati del turno
-    let config_turno = {};
     if (active) {
-      // Chiude la corrente e ne crea una nuova se i prezzi cambiano (o forza nuova)
-      active.timestampEnd = new Date().toISOString();
+      const pricesChanged =
+        active.prices.SSP !== newPrices.SSP ||
+        active.prices.Diesel !== newPrices.Diesel ||
+        active.prices.GPL !== newPrices.GPL;
 
-      config_turno = {
-        ...item_turno,
-        id: active.id + 1,
-        startCounters: JSON.parse(JSON.stringify(active.endCounters)),
-        endCounters: JSON.parse(JSON.stringify(active.endCounters)),
-      };
+      if (pricesChanged) {
+        // Splitta il turno automaticamente
+        active.timestampEnd = endIso || new Date().toISOString();
+        let config_turno = {
+          prices: newPrices,
+          timestampStart: active.timestampEnd,
+          timestampEnd: null,
+          operator: appData.operator,
+          id: active.id + 1,
+          startCounters: JSON.parse(JSON.stringify(active.endCounters)),
+          endCounters: JSON.parse(JSON.stringify(active.endCounters)),
+        };
+        appData.closures.push(config_turno);
+      } else {
+        // Aggiorna solo gli orari del turno corrente (correzione bug: prima creava nuovi turni di continuo)
+        active.timestampStart = startIso;
+        active.timestampEnd = endIso;
+        active.operator = appData.operator;
+        active.prices = newPrices;
+      }
     } else {
-      config_turno = {
-        ...item_turno,
+      let config_turno = {
+        prices: newPrices,
+        timestampStart: startIso,
+        timestampEnd: endIso,
+        operator: appData.operator,
         id: 1,
         startCounters: createEmptyCounters(),
         endCounters: createEmptyCounters(),
       };
+      appData.closures.push(config_turno);
     }
 
-    // console.log(config_turno);
-    //Aggiungo tutti i parametri del turno nella lista app
-    appData.closures.push(config_turno);
     saveData();
-    //alert("Configurazione salvata. Nuovo turno aperto.");
+    window.location.href = "index.html";
+  });
+
+  // LOGICA: FORZA NUOVO TURNO MANUALE
+  document.getElementById("btn-force-new").addEventListener("click", () => {
+    if (!active) return alert("Nessun turno aperto da chiudere.");
+
+    appData.operator = document.getElementById("input-operator").value;
+    let endVal = document.getElementById("input-end-datetime").value;
+
+    active.timestampEnd = endVal
+      ? new Date(endVal).toISOString()
+      : new Date().toISOString();
+
+    let config_turno = {
+      prices: JSON.parse(JSON.stringify(active.prices)), // Mantiene stessi prezzi
+      timestampStart: active.timestampEnd,
+      timestampEnd: null,
+      operator: appData.operator,
+      id: active.id + 1,
+      startCounters: JSON.parse(JSON.stringify(active.endCounters)),
+      endCounters: JSON.parse(JSON.stringify(active.endCounters)),
+    };
+    appData.closures.push(config_turno);
+
+    saveData();
     window.location.href = "index.html";
   });
 
@@ -102,31 +184,6 @@ if (document.getElementById("page-config")) {
       location.reload();
     }
   });
-}
-
-/**
- *  Crea oggetto Data in base al testo fornito, viene aggiunto il tempo di adesso
- * @param {string} data_str : esempio: "2026-05-07"
- */
-function creaDataDaTesto(data_str) {
-  const [anno, mese, giorno] = data_str.split("-");
-
-  const adesso = new Date();
-
-  const dataCompleta = new Date(
-    anno,
-    mese - 1,
-    giorno,
-    adesso.getHours(),
-    adesso.getMinutes(),
-    adesso.getSeconds(),
-  );
-  // console.log(
-  //   dataCompleta.toLocaleDateString(),
-  //   " ",
-  //   dataCompleta.toLocaleTimeString(),
-  // );
-  return dataCompleta;
 }
 
 // --- LOGICA CONTATORI (INDEX) ---
@@ -205,8 +262,36 @@ if (document.getElementById("page-index")) {
 
   initGlobalHelpers();
 
-  // Hepler utili
+  // Helper utili
   function initGlobalHelpers() {
+    // --- 🛠️ INIZIO AREA TEST / DEBUG ---
+    // Modifica questi valori come preferisci per i tuoi test
+    const TEST_COUNTERS = {
+      "Pump 1": { prima: 1234500, dopo: 1234550 },
+      "Pump 2": { prima: 9876500, dopo: 9876550 },
+      "Pump 3": { prima: 1111111, dopo: 1111222 },
+      "Pump 4": { prima: 2222222, dopo: 2222333 },
+      "Pump 5": { prima: 3333333, dopo: 3333444 },
+      "Pump 6": { prima: 4444444, dopo: 4444555 },
+      "Pump 7": { prima: 5555555, dopo: 5555666 },
+      "Pump 8": { prima: 6666666, dopo: 6666777 },
+    };
+
+    window.fillTestCounters = function () {
+      if (!active) return alert("Nessun turno aperto!");
+
+      for (const [pump, values] of Object.entries(TEST_COUNTERS)) {
+        // Verifica che la pompa esista nel turno corrente per evitare errori
+        if (active.startCounters[pump] !== undefined) {
+          active.startCounters[pump] = values.prima;
+          active.endCounters[pump] = values.dopo;
+        }
+      }
+      saveData();
+      renderCounters();
+      console.log("Contatori di test caricati con successo!");
+    };
+    // --- 🛠️ FINE AREA TEST / DEBUG ---
     // Aggiorna le cifre dei contatori delle pompe
     window.updateDigit = function (pump, type, index, delta) {
       let valStr = String(active[type][pump] || 0).padStart(7, "0");
@@ -268,15 +353,16 @@ if (document.getElementById("page-summary")) {
 
   appData.closures.forEach((closure) => {
     let inizio_date = new Date(closure.timestampStart);
-    let fine_date = new Date(closure.timestampEnd);
     let str_date_inizio =
       inizio_date.toLocaleDateString() + " " + inizio_date.toLocaleTimeString();
-    let str_date_fine =
-      fine_date.toLocaleDateString() + " " + fine_date.toLocaleTimeString();
 
-    if (closure.timestampEnd == null) {
-      str_date_fine = "Non disponibile";
+    let str_date_fine = "Non disponibile";
+    if (closure.timestampEnd != null) {
+      let fine_date = new Date(closure.timestampEnd);
+      str_date_fine =
+        fine_date.toLocaleDateString() + " " + fine_date.toLocaleTimeString();
     }
+
     let html = `<div class="closure-block">
             <strong>Chiusura #${closure.id} - Operatore : ${closure.operator}</strong>
             <br>
